@@ -1,7 +1,12 @@
 
 
 <script>
+  import ClipVideo from "./ClipVideo.svelte";
+
   console.log("HI");
+
+
+
 
   function func(){
     console.log("click");
@@ -16,8 +21,11 @@
   none
 </div>
 
+
+
 <style>
   div {
     user-select: none;
   }
 </style>
+<ClipVideo></ClipVideo>
