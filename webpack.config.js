@@ -24,6 +24,8 @@ module.exports = {
 		filename: '[name].js',
 		chunkFilename: '[name].[id].js'
   },
+  
+	devtool: prod ? false : 'source-map',
   devServer: {
     contentBase: [
       path.join(__dirname, 'dist'),
@@ -32,6 +34,7 @@ module.exports = {
     liveReload: true,
     mimeTypes: {},
   },
+  
 	module: {
 		rules: [
 			{
@@ -44,6 +47,9 @@ module.exports = {
             emitCss: true,
             hotReload: !prod,
             preprocess: SveltePreprocess({
+              typescript: {
+                tsconfigFile: "tsconfig.json",
+              },
               babel: {
                 presets: [
                   [
@@ -92,5 +98,4 @@ module.exports = {
       template: "src/index.html",
     }),
 	].filter(Boolean),
-	devtool: prod ? false: 'source-map'
 };
