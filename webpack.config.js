@@ -2,16 +2,21 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const SveltePreprocess = require("svelte-preprocess");
 
+const webpack = require("webpack");
+
 const path = require('path');
 
 const mode = process.env.NODE_ENV || 'development';
 const prod = mode === 'production';
 
+console.log("webpack.config.js: prod:", prod);
+
 module.exports = {
 	entry: {
-		bundle: [ './src/index.js' ]
+    bundle: [ './src/index.js' ],
   },
   mode,
+  watch: !prod,
 	resolve: {
 		alias: {
 			svelte: path.resolve('node_modules', 'svelte')
@@ -31,6 +36,9 @@ module.exports = {
       path.join(__dirname, 'dist'),
       path.join(__dirname, 'src/lib'),
     ],
+    historyApiFallback: {
+      index: 'index.html'
+    },
     liveReload: true,
     mimeTypes: {},
   },
@@ -89,7 +97,6 @@ module.exports = {
 			}
 		]
 	},
-	mode,
 	plugins: [
 		prod && new MiniCssExtractPlugin({
 			filename: '[name].css'
@@ -97,5 +104,6 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "src/index.html",
     }),
+
 	].filter(Boolean),
 };

@@ -46,15 +46,51 @@ namespace VideoUtil
     })
   }
 
+  async function convertToTypedArray(obj: Uint8Array | Blob): Promise<Uint8Array> {
+    if(obj instanceof Uint8Array){
+      return obj;
+    } else{
+      return new Uint8Array(await obj.arrayBuffer());
+    }
+  }
+
+  export async function insertKeyFrames(
+      file: Uint8Array | Blob,
+      from: string | number = 0,
+      to: string | number = null){
+    
+    let data: Uint8Array = await convertToTypedArray(file);
+    let _in = "input.mp4";
+    let out = randomstring(6) + ".mp4";
+    
+    data = await addToQueue(out, {
+      type: "run",
+      MEMFS: [{
+        name: _in,
+        data,
+      }],
+      arguments: `-i ${_in} -force_key_frames ${from},${to} -vcodec copy -y ${out}`.split(" ").filter(Boolean)
+    })
+    return data;
+  }
+
 
   export async function clip(
       file: Blob,
       from: string | number = 0,
-      to: string | number = null){
+      to: string | number = null,
+      accurate: boolean = false){
     
-    let data: Uint8Array = new Uint8Array(await file.arrayBuffer());
+    let data: Uint8Array = await convertToTypedArray(file);
     let _in = "input.mp4";
     let out = randomstring(6) + ".mp4";
+
+    let cmd = "";
+    if(accurate){
+      cmd = `-i ${_in} -ss ${from} -to ${to} -c:a copy -y ${out}`;
+    } else{
+      cmd = `-i ${_in} -ss ${from} -to ${to} -c copy -y ${out}`
+    }
 
     data = await addToQueue(out, {
       type: "run",
@@ -63,7 +99,8 @@ namespace VideoUtil
         data,
       }],
       // https://trac.ffmpeg.org/wiki/Seeking
-      arguments: `-y -accurate_seek -i ${_in} -ss ${from} -to ${to} -codec copy ${out}`.split(" ").filter(Boolean)
+      // http://www.markbuckler.com/post/cutting-ffmpeg/
+      arguments: cmd.split(" ").filter(Boolean)
           /*
           `-i ${_in} -force_key_frames ${from},${to} 
           -ss ${from} -to ${to} -codec copy 
@@ -94,6 +131,28 @@ namespace VideoUtil
     document.body.appendChild(a);
   }
 
+  export async function toWebm(
+      file: Blob | Uint8Array,
+      quality: number = 30){
+  
+    let data: Uint8Array = await convertToTypedArray(file);
+    let _in = "input.mp4";
+    let out = randomstring(6) + ".webm";
+
+    let cmd = `-i ${_in} -strict -2 -c:v libvpx-vp9 -crf ${quality} ` +
+        `-b:v 0 -b:a 128k -c:a libopus ${out}`;
+
+
+    data = await addToQueue(out, {
+      type: "run",
+      MEMFS: [{
+        name: _in,
+        data,
+      }],
+      arguments: cmd.split(" ").filter(Boolean)
+    })
+    return data;
+  }
 }
 
 export default VideoUtil;
