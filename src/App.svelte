@@ -6,7 +6,7 @@
 
   const pathnames = location.pathname.split("/");
   console.log(pathnames);
-  console.log("HI");
+  console.log("HIASDFSAD");
 
   let current_page = SyncSession;
   if(/^clip-?video$/.test(pathnames[1])){

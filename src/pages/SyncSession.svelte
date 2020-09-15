@@ -6,6 +6,9 @@
   const url = new URL(location.href);
   const query = url.searchParams;
   
+  let session = query.get("session");
+  console.log("session:", session);
+
   let src = query.get("src");
   console.log("src:", src);
 
@@ -26,8 +29,13 @@ iframe {
 </style>
 
 
+{#if !session}
+  <div>
+    create new session
+  </div>
+{:else}
+  <iframe title="session container"
+      bind:this={iframe} {src} >
 
-<iframe title="session container"
-    bind:this={iframe} {src} >
-
-</iframe>
+  </iframe>
+{/if}
