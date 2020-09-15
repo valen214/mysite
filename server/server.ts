@@ -28,6 +28,11 @@ app.use(express.static(path.join(__dirname, "../dist")));
 
 app.use(sync_session);
 
+app.get(/.*/, (req, res, next) => {
+  console.log(req.method, req.path, "HTTP/" + req.httpVersion);
+  next();
+});
+
 app.get('/', (req, res) => {
   res.type('text/html; charset=utf-8');
   res.sendFile(path.join(__dirname, '../dist', 'index.html'));
