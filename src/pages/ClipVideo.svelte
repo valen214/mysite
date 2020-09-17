@@ -1,4 +1,6 @@
 
+// @ts-ignore
+<svelte:options tag="clip-video"/>
 
 <script lang="ts">
 

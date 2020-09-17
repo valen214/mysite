@@ -1,4 +1,5 @@
 
+<svelte:options tag="sync-session"/>
 
 <script lang="ts">
   import { tick } from "svelte";
@@ -18,6 +19,8 @@
     await tick();
     console.log(iframe);
   })();
+
+  let a = false;
 </script>
 
 <style>
@@ -30,8 +33,9 @@ iframe {
 
 
 {#if !session}
-  <div>
-    create new session
+  <div on:click={() => { a = !a; }}>
+    create new session { location.origin } { location.search } <br />
+    a: { a }
   </div>
 {:else}
   <iframe title="session container"

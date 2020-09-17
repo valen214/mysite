@@ -5,6 +5,8 @@ import path from "path";
 import fs from "fs";
 
 import express from "express";
+import svelte from "svelte";
+
 
 import sync_session from "./routes/sync_session";
 
@@ -24,6 +26,7 @@ app.use(middleware(compiler, {
 
 */
 
+console.log('svelte:', svelte);
 console.log("__dirname:", __dirname);
 
 app.use(express.static(path.join(__dirname, "../dist")));
