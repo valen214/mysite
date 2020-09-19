@@ -81,15 +81,13 @@ let genConfig = ({
               }),
             },
           }
-        },
-        {
+        }, {
           test: /\.ts$/,
           exclude: /node_modules/,
           use: {
             loader: 'ts-loader',
           },
-        },
-        {
+        }, {
           test: /\.css$/,
           exclude: /node_modules/,
           use: [
@@ -104,6 +102,9 @@ let genConfig = ({
       ]
     },
     plugins: [
+      function SvelteCustomElementTag(compiler){
+        // compiler.hooks.beforeCompile
+      },
       prod && new MiniCssExtractPlugin({
         filename: '[name].css'
       }),
@@ -117,13 +118,16 @@ let genConfig = ({
 
 
 
-module.exports = () => {
-  
+module.exports = (env, argv) => {
+  console.log("env:", env);
+  console.log("argv:", argv);
+
+
   let config = [
     // genConfig(),
     genConfig({
       entry: {
-        sync_session: [ "./src/pages/sync_session.js" ],
+        sync_session: [ "./src/pages/SyncSession.svelte" ],
         clip_video: [ "./src/pages/ClipVideo.svelte" ],
       },
       customElement: true
