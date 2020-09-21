@@ -38,7 +38,8 @@ app.all(/.*/, (req, res, next) => {
   let out = Array.from(req_line).map((v, i) => ( `\x1B\x5B38;5;${
     Math.floor((232 - 17) * Math.random()) + 17
   }m` + v )).join("");
-  console.log(out);
+  // console.log(out);
+  console.log(req_line);
   next();
 });
 

@@ -13,7 +13,8 @@ console.log("webpack.config.js: prod:", prod);
 
 let genConfig = ({
   entry,
-  customElement = false
+  customElement = false,
+  path: _path,
 } = {}) => {
   console.log("customElement:", customElement);
   return {
@@ -30,13 +31,14 @@ let genConfig = ({
       mainFields: ['svelte', 'browser', 'module', 'main']
     },
     output: {
-      path: __dirname + '/dist',
+      path: _path || (__dirname + '/dist'),
       filename: '[name].js',
       chunkFilename: '[name].[id].js'
     },
     
     devtool: prod ? false : 'source-map',
     devServer: {
+      writeToDisk: true,
       contentBase: [
         path.join(__dirname, 'dist'),
         path.join(__dirname, 'src/lib'),
@@ -98,12 +100,20 @@ let genConfig = ({
             prod ? MiniCssExtractPlugin.loader : 'style-loader',
             'css-loader'
           ]
+        },
+        {
+          test: /\.svelte$/,
+          exclude: /node_modules/,
+          loader: "string-replace-loader",
+          options: customElement ? {} : {
+            search: /^\s*\<svelte\:options tag\=[^>]+\>/,
+            replace: ""
+          }
         }
       ]
     },
     plugins: [
-      function SvelteCustomElementTag(compiler){
-        // compiler.hooks.beforeCompile
+      customElement && function SvelteCustomElementTag(compiler){
       },
       prod && new MiniCssExtractPlugin({
         filename: '[name].css'
@@ -124,13 +134,14 @@ module.exports = (env, argv) => {
 
 
   let config = [
-    // genConfig(),
+    genConfig(),
     genConfig({
       entry: {
         sync_session: [ "./src/pages/SyncSession.svelte" ],
         clip_video: [ "./src/pages/ClipVideo.svelte" ],
       },
-      customElement: true
+      customElement: true,
+      path: __dirname + '/dist/pages'
     })
   ];
 
