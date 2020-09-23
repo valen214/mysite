@@ -1,19 +1,14 @@
 
 
 import express from "express";
-import svelte from "svelte";
 
 import http from "http";
+import path from "path";
+import fs from "fs";
 
 const router = express.Router();
 
-console.log(svelte);
-
-router.get(["/sync-session", "/clip-video"], (req, res) => {
-  console.log(Object.entries(req).filter(([key, value]) => {
-    return ["query", "params"].includes(key);
-  }).map(([key, value]) => `${key}: ${value}`).join("\n"));
-
+function redirectToWebpackDevServer(res: express.Response<any>){
   res.type("text/html; charset=utf-8");
   http.get("http://localhost:8080", _res => {
     _res.on("data", chunk => {
@@ -26,14 +21,41 @@ router.get(["/sync-session", "/clip-video"], (req, res) => {
     console.log(e.message);
     res.end();
   })
+}
+
+function useCopmiledHTML(res: express.Response<any>){
+  res.type("text/html; charset=utf-8");
+  let buf = fs.readFileSync(path.join(
+    __dirname,
+    "../../src/index.html"
+  ));
+  let src = buf.toString("utf-8").replace("<body>",
+      `<body><script src='/pages/sync_session.js'></script>
+      <sync-session />`);
+  res.end(src);
+}
+
+router.get("/sync-session/service_worker.js", (req, res) => {
+  res.type("application/javascript; charset=utf-8");
+  res.end(fs.readFileSync(path.join(__dirname,
+    "../../src/pages/sync-session/service_worker.js"
+  )))
+})
+
+router.get([
+    "/sync-session",
+    "/clip-video",
+], (req, res) => {
+  console.log(Object.entries(req).filter(([key, value]) => {
+    return ["query", "params"].includes(key);
+  }).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join("\n"));
+
+  redirectToWebpackDevServer(res);
 });
 
-router.get("/google", (req, res) => {
-  // res.type("text/html; charset=utf-8");
-  res.setHeader("Content-Type", "text/html; charset=utf-8");
-
+function fetchGoogle(res: express.Response<any>){
   let buf: Buffer;
-  http.get("http://www.google.com", _res => {
+  return http.get("http://www.google.com", _res => {
     
     _res.on("data", chunk => {
       if(buf){
@@ -51,6 +73,19 @@ router.get("/google", (req, res) => {
     // console.log(e.message);
     // res.end();
   })
+  
+}
+
+router.get("/google", (req, res) => {
+  // res.type("text/html; charset=utf-8");
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+
+  res.end(fs.readFileSync(path.join(
+    __dirname,
+    "../../google.html"
+  )));
 });
+
+
 
 export default router;

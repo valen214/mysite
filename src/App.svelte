@@ -12,7 +12,7 @@
   } else if(/^sync-?sessions?\/?$/.test(pathnames[1])){
     current_page = SyncSession;
   } else{
-
+    ;
   }
 </script>
 

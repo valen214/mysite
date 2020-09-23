@@ -29,9 +29,6 @@ app.use(middleware(compiler, {
 console.log('svelte:', svelte);
 console.log("__dirname:", __dirname);
 
-app.use(express.static(path.join(__dirname, "../dist")));
-
-app.use(sync_session);
 
 app.all(/.*/, (req, res, next) => {
   let req_line = `${req.method} ${req.path} HTTP/${req.httpVersion}`;
@@ -39,14 +36,32 @@ app.all(/.*/, (req, res, next) => {
     Math.floor((232 - 17) * Math.random()) + 17
   }m` + v )).join("");
   // console.log(out);
-  console.log(req_line);
+
+  res.on("finish", () => {});
+  res.on("close", () => {
+    let { statusCode: code, statusMessage: msg } = res;
+    console.log(`${req_line.padEnd(60, " ")} => ${code} ${msg}`);
+  });
+
+
   next();
 });
 
 app.get('/', (req, res) => {
+  console.log("root path");
   res.type('text/html; charset=utf-8');
-  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+  res.end(`
+<html><head>
+<meta http-equiv="refresh"
+    content="0; url=http://localhost:3000/sync-session">
+</head></html>
+  `);
 });
+
+app.use(express.static(path.join(__dirname, "../dist")));
+app.use(express.static(path.join(__dirname, "../src/lib")));
+
+app.use(sync_session);
 
 
 app.get('/test', (req, res, next) => {
