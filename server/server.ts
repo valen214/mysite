@@ -5,6 +5,9 @@ import path from "path";
 import fs from "fs";
 
 import express from "express";
+// @ts-ignore
+// import cookieParser from "cookie-parser";
+const cookieParser = require("cookie-parser");
 import svelte from "svelte";
 
 
@@ -29,7 +32,9 @@ app.use(middleware(compiler, {
 console.log('svelte:', svelte);
 console.log("__dirname:", __dirname);
 
+app.use(cookieParser());
 
+// log request
 app.all(/.*/, (req, res, next) => {
   let req_line = `${req.method} ${req.path} HTTP/${req.httpVersion}`;
   let out = Array.from(req_line).map((v, i) => ( `\x1B\x5B38;5;${
@@ -41,6 +46,9 @@ app.all(/.*/, (req, res, next) => {
   res.on("close", () => {
     let { statusCode: code, statusMessage: msg } = res;
     console.log(`${req_line.padEnd(60, " ")} => ${code} ${msg}`);
+    if(Object.keys(req.query).length){
+      console.log("query:", JSON.stringify(req.query));
+    }
   });
 
 

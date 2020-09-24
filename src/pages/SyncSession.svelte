@@ -4,7 +4,17 @@
 <script lang="ts">
   import randomstring from "../lib/randomstring";
 
+
+
+  let session = location.pathname.split("sync-session").pop().slice(1);
+  let src = new URL(location.href).searchParams.get("src");
+  let src_head = "";
+  let src_body = "";
+  let iframe: HTMLIFrameElement;
+
+  
   (function registerServiceWorker(){
+    // if(!session) return;
     if("serviceWorker" in navigator){
       console.log("registering service worker");
       navigator.serviceWorker.register(
@@ -20,47 +30,97 @@
     }
   })();
 
-  const query = new URL(location.href).searchParams;
-  
-  let session = query.get("session");
-  let src = query.get("src");
-  let srcdoc = "";
-  let src_head = "";
-  let src_body = "";
+  function createUrl({
+    srcdoc,
+    setsrc
+  }: {
+    srcdoc?: boolean
+    setsrc?: string
+  } = {}){
+    let url = new URL(location.href);
+    if(setsrc){
+      url.pathname = "/sync-session/" + session + "/setsrc";
+      url.searchParams.set("setsrc", setsrc);
+    } else if(srcdoc){
+      url.pathname = "/sync-session/" + session + "/srcdoc";
+    } else if(session){
+      url.pathname = "/sync-session/" + session;
+    } else{
+      url.pathname = "/sync-session";
+    }
+    return url.href;
+  }
 
+  function setSrcdoc(text: string){
+    let parts = text.split(/<\/?(?:head|body)[^>]*>/g);
+    src_head = parts[1] || "";
+    let body = parts[3] || ""
+    if(body){
+      console.log("setSrcdoc, find href:", src_body.search(/href="/g));
+      src_body = body.replaceAll(/href="([^"]*)"/g, (
+        match, p1, offset
+      ) => {
+        console.log(match, p1, offset);
+        return "href=\"" + location.origin +
+          "/sync-session/" + session +
+          "/setsrc?setsrc=" + encodeURIComponent(p1) + '"';
+      });
+    } else{
+      src_body = body;
+    }
+  }
+
+  if(session){
+    (async () => {
+      let res = await fetch(createUrl({ srcdoc: true }));
+      let text = await res.text();
+      setSrcdoc(text);
+    })();
+  }
 
   // $: console.log("$$props:", $$props);
   $: console.log("session:", session);
 
-  let iframe: HTMLIFrameElement;
 
 
   window.addEventListener("popstate", (e) => {
-    console.log(e);
-    console.log("popstate:", e.state);
+    console.log("popstate:", e.state, e);
     session = e?.state?.session;
+  });
+  window.addEventListener("beforeunload", (e) => {
+    // @ts-ignore
+    console.log("on before unlaod", document.activeElement.href);
+    console.log(location.href);
+
+    let pause = 1;
+
+    if(pause){
+      e.preventDefault();
+      e.returnValue = "Chrome Required";
+      return "on before unload";
+    }
   });
 
 
   async function createNewSession(){
     if(src){
-      console.log("src:", src);
+      setSrcdoc("<head></head><body>Loading...</body>");
+      session = randomstring(6);
+      console.log("create new session:", session, "src:", src);
 
-      let res = await fetch(location.origin + `/google`);
+      let res = await fetch(createUrl({ setsrc: src }));
+
+      location.pathname = "/sync-session/" + session;
+      if(1) return;
+
+
       let text = await res.text();
 
-      srcdoc = text;
-      let parts = text.split(/<\/?(?:head|body)[^>]*>/g);
-      src_head = parts[1];
-      src_body = parts[3];
-      console.log(parts.map(str => str.slice(0, 100)));
+      setSrcdoc(text);
 
-      session = randomstring(6);
-      let url = new URL(location.href);
-      url.searchParams.set("session", session);
       history.pushState({
         session,
-      }, "sync session", url.href);
+      }, "sync session", createUrl());
     } else{
       console.log("no url provided");
     }
@@ -69,14 +129,6 @@
   let showToolbar = false;
   let toolbar: HTMLElement;
 </script>
-
-<svelte:window on:beforeunload={e => {
-    e.preventDefault();
-    // @ts-ignore
-    console.log("on before unlaod", document.activeElement.href);
-    console.log(location.href);
-    return "on before unload";
-  }} />
 
 <style>
 .toolbar {
@@ -115,7 +167,9 @@
 <svelte:head>
   <title>Sync Session</title>
   {@html session ? src_head : ""}
-  <base href="{location.href}/sync-session" />
+  <base href="{location.origin}/sync-session{
+    session ? '/' + session : ''
+  }" />
 </svelte:head>
 
 
@@ -138,11 +192,9 @@
       }}>
     <div on:click={() => {
           session = "";
-          let url = new URL(location.href);
-          url.searchParams.delete("session");
           history.pushState({
             session,
-          }, "sync session", url.href);
+          }, "sync session", createUrl());
         }}>
       CLEAR SESSION
     </div>
