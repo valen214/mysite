@@ -1,16 +1,14 @@
 
-<svelte:options tag="sync-session"/>
 
 <script lang="ts">
   import randomstring from "../lib/randomstring";
-
-
 
   let session = location.pathname.split("sync-session").pop().slice(1);
   let src = "https://www.ptwxz.com/";
   // new URL(location.href).searchParams.get("src");
   let src_head = "";
   let src_body = "";
+  let useIFrame = true;
   let iframe: HTMLIFrameElement;
 
   
@@ -53,15 +51,10 @@
   }
 
   function setSrcdoc(text: string){
-    let parts = text.split(/<\/?(?:head|body)[^>]*>/g);
-    src_head = parts[1] || "";
-    let body = parts[3] || ""
-    if(body){
-      console.log("setSrcdoc, find href:", src_body.search(/href="/g));
-      src_body = body.replaceAll(/href="([^"]*)"/g, (
-        match, p1, offset
+    let parts = text.replaceAll(/href=(?:"([^"]*)"|'([^']*)')/g, (
+        match, p1, p2, offset
       ) => {
-        let url = p1;
+        let url = p1 || p2;
         if(p1.startsWith("//")){
           url = encodeURIComponent("http:" + p1);
         } else if(p1.startsWith("/")){
@@ -72,7 +65,27 @@
         return "href=\"" + location.origin +
           "/sync-session/" + session +
           "/setsrc?setsrc=" + url + '"';
-      });
+      }).replaceAll(/src=(?:"([^"]*)"|'([^']*)')/g, (
+        match, p1, p2, offset
+      ) => {
+        let url = p1 || p2;
+        if(p1.startsWith("//")){
+          url = encodeURIComponent("http:" + p1);
+        } else if(p1.startsWith("/")){
+          url = encodeURIComponent("ORIGIN://" + p1)
+        } else{
+          url = encodeURIComponent(p1);
+        }
+        return "src=\"" + location.origin +
+          "/sync-session/" + session +
+          "/get?src=" + url + '"';
+      }).split(/<\/?(?:head|body)[^>]*>/g);
+    
+    src_head = parts[1] || "";
+    let body = parts[3] || ""
+    if(body){
+      console.log("setSrcdoc, find href:", src_body.search(/href="/g));
+      src_body = body;
     } else{
       src_body = body;
     }
@@ -170,15 +183,20 @@
   left: 50%;
   transform: translate(-50%, 100%);
 }
+
+iframe {
+  width: 100%;
+  height: 100%;
+}
 </style>
 
 
 <svelte:head>
   <title>Sync Session</title>
-  {@html session ? src_head : ""}
   <base href="{location.origin}/sync-session{
     session ? '/' + session : ''
   }" />
+  {@html session && useIFrame ? src_head : ""}
 </svelte:head>
 
 
@@ -188,6 +206,17 @@
     <input type="text" bind:value={src} />
     <button on:click={createNewSession}>GO</button>
   </div>
+{:else if useIFrame}
+  <iframe
+      title="sync session content"
+      srcdoc={`
+        <html>
+          <head>
+            <base href="${location.origin}/sync-session${session ? '/' + session : ''}/get" />
+            ${src_head}
+          </head><body>${src_body}</body></html>`}>
+
+  </iframe>
 {:else}
   {@html src_body}
   <div

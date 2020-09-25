@@ -58,14 +58,45 @@ app.all(/.*/, (req, res, next) => {
 
 app.get('/', (req, res) => {
   console.log("root path");
-  res.type('text/html; charset=utf-8');
-  res.end(`
-<html><head>
-<meta http-equiv="refresh"
-    content="0; url=http://localhost:3000/sync-session">
-</head></html>
+  res.type("text/plain; charset=utf-8");
+  res.end("HEY THERE!");
+});
+
+
+app.get([
+    "/my_?clip.js",
+    "/my_foo.js",
+    "/my_component.js"
+], (req, res) => {
+  res.type("application/javascript; charset=utf-8");
+  res.end(fs.readFileSync(path.join(__dirname, "../public/build/bundle.js")));
+})
+app.get("/myclip", (req, res) => {
+  res.type("text/html; charset=utf-8");
+  res.end(`<!DOCTYPE html><html>
+<head>
+
+</head>
+<body>
+  <div id="root1"></div>
+  <div id="root2"></div>
+
+  <script type="module">
+    import MyComponent from "/my_component.js";
+    new MyComponent({
+      target: document.getElementById("root1")
+    });
+
+    import MyFoo from "/my_foo.js";
+    new MyFoo({
+      target: document.getElementById("root2")
+    });
+  </script>
+</body>
+</html>
   `);
 });
+
 
 app.use(express.static(path.join(__dirname, "../dist")));
 app.use(express.static(path.join(__dirname, "../src/lib")));

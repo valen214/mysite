@@ -139,8 +139,9 @@ module.exports = (env, argv) => {
       entry: {
         sync_session: [ "./src/pages/SyncSession.svelte" ],
         clip_video: [ "./src/pages/ClipVideo.svelte" ],
+        my_clip: [ "./src/pages/MyClip.svelte" ],
       },
-      customElement: true,
+      // customElement: true,
       path: __dirname + '/dist/pages'
     })
   ];

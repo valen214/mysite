@@ -1,6 +1,4 @@
 
-<svelte:options tag="clip-video"/>
-
 <script lang="ts">
 
   import FileUtil from "../lib/file_util";
