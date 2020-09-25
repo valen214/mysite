@@ -1,5 +1,6 @@
 console.log('\n'.repeat(5) + "running server.ts");
 
+require('https').globalAgent.options.ca = require('ssl-root-cas/latest').create();
 
 import path from "path";
 import fs from "fs";

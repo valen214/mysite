@@ -1,4 +1,5 @@
 
+console.log = () => {};
 
 console.log("service worker scope");
 
@@ -33,30 +34,52 @@ function handleMethod(urlString){
   return HANDLE_METHOD_FULLPATH;
 }
 
+function extractSessionFromUrl(url){
+  try{
+    url = new URL(url);
+    let parts = url.pathname.split("/");
+    if(parts[1] === "sync-session"){
+      if(parts[2] && parts[2].length !== 6){
+        throw new Error("failed to get session");
+      }
+      return parts[2];
+    }
+  } catch(e){
 
-function getSession(req){
-  let url = new URL(req.referrer);
-  let parts = url.pathname.split("/");
-  if(parts[1] === "sync-session"){
-    return parts[2];
-  } else{
-    console.error("cannot identify session from:", req.referrer);
   }
 }
 
-let firstRequest = true;
-self.addEventListener("fetch", async e => {
-  console.log("lcoation.origin:", location.origin);
+async function getSession(e){
+  let session = extractSessionFromUrl(e.request.referrer);
+  if(session) return session;
 
-  let session = getSession(e.request);
+  session = extractSessionFromUrl(e.request.url);
+  if(session) return session;
+
+  let client = await self.clients.get(e.resultingClientId);
+  session = extractSessionFromUrl(client.url)
+  if(session) return session;
+
+  return "";
+}
+
+let firstRequest = true;
+self.addEventListener("fetch", e => e.respondWith(async function(){
+  if(0) console.log("lcoation.origin:", location.origin,
+      "\nclientId:", e.clientId,
+      "\nscope:", self.registration.scope, 
+      "\ne:", e);
+
+  let session;
   let url;
 
   switch(handleMethod(e.request.url)){
   case HANDLE_METHOD_PASSTHROUGH:
     console.log("PASSTHROUGHT:", e.request.url);
-    e.respondWith(fetch(e.request));
-    break;
+    return fetch(e.request);
   case HANDLE_METHOD_REPLACE_ORIGIN:
+    session = await getSession(e)
+
     url = new URL(location.href)
     url.searchParams.set("src",
         e.request.url.replace(location.origin, "ORIGIN://"));
@@ -64,25 +87,23 @@ self.addEventListener("fetch", async e => {
 
     console.log("REDIRECT:", e.request.url, "=>", url.href);
 
-    e.respondWith(fetch(url.href, {
+    return fetch(url.href, {
       // ...e.request
-    }));
-    break;
+    });
   case HANDLE_METHOD_FULLPATH:
+    session = await getSession(e)
+
     url = new URL(location.href)
     url.searchParams.set("src", e.request.url);
     url.pathname = `/sync-session/${session}/get`;
 
     console.log("REDIRECT:", e.request.url, "=>", url.href);
 
-    e.respondWith(fetch(url.href, {
+    return fetch(url.href, {
       // ...e.request
-    }));
-    break;
+    });
   default:
     console.error("FATAL: unreachable code");
-    e.respondWith(fetch(e.request));
-    
-    break;
+    return fetch(e.request);
   }
-});
+}()));

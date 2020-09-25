@@ -2,33 +2,37 @@
 
 import express from "express";
 
-import http from "http";
-import https from "https";
+const https = require("https");
+const ca = require('ssl-root-cas/latest').create();
+https.globalAgent.options.ca = ca;
+
+import axios from "axios";
+axios.defaults.httpsAgent = new https.Agent({
+  // ca,
+  rejectUnauthorized: false
+})
+
+
 import path from "path";
 import fs from "fs";
 
+
 const router = express.Router();
 
-function respondsWith(
+async function respondsWith(
   res: express.Response,
   url: string = "http://localhost:8080",
   type: string = "text/html; charset=utf-8"
 ){
-  let buffer: Buffer;
-  res.type(type);
-
-  let http_module = (url.startsWith("https://") ? https : http);
-  http_module.get(url, _res => {
-    _res.on("data", chunk => {
-      buffer = buffer ? Buffer.concat([ buffer, chunk ]) : chunk;
+  try{
+    let _res = await axios.get(url, {
+      responseType: "arraybuffer"
     });
-    _res.on("end", () => {
-      res.end(buffer);
-    });
-  }).on("error", e => {
-    console.log(e.message);
-    res.end(e.message);
-  });
+    res.type(_res.headers["content-type"]);
+    res.end(_res.data);
+  } catch(e){
+    console.error(e.message);
+  }
 }
 
 
@@ -63,13 +67,13 @@ router.get("/sync-session/service_worker.js", (req, res) => {
     "../../src/pages/sync-session/service_worker.js"
   )))
 })
-router.get("/sync-session/bundle.js", (req, res) => {
+router.get(/^\/sync-session(\/[^\/]+)?\/bundle\.js$/, (req, res) => {
   respondsWith(res,
       "http://localhost:8080/bundle.js",
       "application/javascript; charset=utf-8"
   );
 })
-router.get("/sync-session/bundle.js.map", (req, res) => {
+router.get(/^\/sync-session(\/[^\/]+)?\/bundle\.js\.map$/, (req, res) => {
   respondsWith(res,
       "http://localhost:8080/bundle.js.map",
       "application/json; charset=utf-8"
@@ -99,7 +103,9 @@ router.get("/sync-session/:session/setsrc", (req, res) => {
   );
   let session = req.params.session;
   let url = req.query.setsrc as string;
-  if(!url.startsWith("http")){
+  if(url.startsWith("ORIGIN://")){
+    url = new URL(cache[session]).origin + url.replace("ORIGIN://", "");
+  } else if(!url.startsWith("http")){
     url = "http://" + url;
   }
 
@@ -110,6 +116,7 @@ router.get("/sync-session/:session/setsrc", (req, res) => {
 router.get("/sync-session/:session/srcdoc", (req, res) => {
   let session = req.params.session;
   let url = cache[session];
+  console.log("srcdoc: responding with:", url);
   respondsWith(res, url);
 });
 router.get("/sync-session/:session/get", (req, res) => {

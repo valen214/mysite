@@ -7,7 +7,8 @@
 
 
   let session = location.pathname.split("sync-session").pop().slice(1);
-  let src = new URL(location.href).searchParams.get("src");
+  let src = "https://www.ptwxz.com/";
+  // new URL(location.href).searchParams.get("src");
   let src_head = "";
   let src_body = "";
   let iframe: HTMLIFrameElement;
@@ -60,10 +61,17 @@
       src_body = body.replaceAll(/href="([^"]*)"/g, (
         match, p1, offset
       ) => {
-        console.log(match, p1, offset);
+        let url = p1;
+        if(p1.startsWith("//")){
+          url = encodeURIComponent("http:" + p1);
+        } else if(p1.startsWith("/")){
+          url = encodeURIComponent("ORIGIN://" + p1)
+        } else{
+          url = encodeURIComponent(p1);
+        }
         return "href=\"" + location.origin +
           "/sync-session/" + session +
-          "/setsrc?setsrc=" + encodeURIComponent(p1) + '"';
+          "/setsrc?setsrc=" + url + '"';
       });
     } else{
       src_body = body;
@@ -71,9 +79,11 @@
   }
 
   if(session){
+    console.log("session found!, loading page from server");
     (async () => {
       let res = await fetch(createUrl({ srcdoc: true }));
-      let text = await res.text();
+      let buffer = await res.arrayBuffer();
+      let text = new TextDecoder("gbk").decode(buffer);
       setSrcdoc(text);
     })();
   }
@@ -90,7 +100,6 @@
   window.addEventListener("beforeunload", (e) => {
     // @ts-ignore
     console.log("on before unlaod", document.activeElement.href);
-    console.log(location.href);
 
     let pause = 1;
 
