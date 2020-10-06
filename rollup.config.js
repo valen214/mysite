@@ -1,21 +1,103 @@
+
+
 import svelte from 'rollup-plugin-svelte';
+import svelte_preprocess from "svelte-preprocess";
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import json from "@rollup/plugin-json";
 import { terser } from 'rollup-plugin-terser';
-import svelte_preprocess from "svelte-preprocess";
 import typescript from '@rollup/plugin-typescript';
+import builtins from 'builtin-modules'
 
 
-const production = !process.env.ROLLUP_WATCH;
 
-export default {
-	input: 'src/pages/MyClip.svelte',
-	output: {
-		sourcemap: true,
-		format: 'es',
-		name: 'app',
-		file: 'public/build/bundle.js'
-	},
+// const production = !process.env.ROLLUP_WATCH;
+// use cross-env to set
+const production = process.env.NODE_ENV === "production";
+
+function serverConfig(){
+  return {
+    input: "server/server.ts",
+    output: {
+      format: "cjs",
+      dir: "public/",
+    },
+    external: builtins,
+    plugins: [
+      commonjs(),
+      typescript({
+        tsconfig: false,
+        allowSyntheticDefaultImports: true
+      }),
+      json(),
+      resolve({
+        browser: false,
+        rootDir: __dirname,
+      }),
+      terser(),
+    ]
+  }
+}
+
+function pagesConfig(){
+  return {
+    input: "src/pages/SyncRead.svelte",
+    output: {
+      format: "es",
+      dir: "public/pages/",
+    },
+    plugins: [
+      svelte({
+        dev: !production,
+        preprocess: svelte_preprocess({}),
+      }),
+      commonjs(),
+      typescript({
+        tsconfig: false,
+        allowSyntheticDefaultImports: true
+      }),
+      resolve({
+        browser: true,
+        dedupe: [ 'svelte' ]
+      }),
+    ],
+    watch: {
+      clearScreen: false
+    }
+  };
+}
+
+export default (args) => {
+  console.log("rollup command line arguments:", args);
+
+  if(args["server"]){
+    delete args["server"];
+    return serverConfig();
+  }
+
+  return pagesConfig();
+};
+
+
+
+
+
+let template = {
+	input: {
+    MyClip: 'src/pages/MyClip.svelte',
+    SyncSession: "src/pages/SyncSession.svelte",
+  },
+	output: [
+    {
+      name: 'app',
+      sourcemap: true,
+      format: 'es',
+      dir: 'public/pages/',
+    }, {
+      format: "cjs",
+      dir: "temp/cjs",
+    }
+  ],
 	plugins: [
 		svelte({
 			// enable run-time checks when not in production

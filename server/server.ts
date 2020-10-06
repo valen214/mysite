@@ -7,12 +7,11 @@ import fs from "fs";
 
 import express from "express";
 // @ts-ignore
-// import cookieParser from "cookie-parser";
-const cookieParser = require("cookie-parser");
-import svelte from "svelte";
-
+import cookieParser from "cookie-parser";
+// const cookieParser = require("cookie-parser");
 
 import sync_session from "./routes/sync_session";
+import sync_read from "./routes/sync_read";
 
 const app: express.Application = express()
 const port = 3000
@@ -30,7 +29,6 @@ app.use(middleware(compiler, {
 
 */
 
-console.log('svelte:', svelte);
 console.log("__dirname:", __dirname);
 
 app.use(cookieParser());
@@ -48,7 +46,7 @@ app.all(/.*/, (req, res, next) => {
     let { statusCode: code, statusMessage: msg } = res;
     console.log(`${req_line.padEnd(60, " ")} => ${code} ${msg}`);
     if(Object.keys(req.query).length){
-      console.log("query:", JSON.stringify(req.query));
+      // console.log("query:", JSON.stringify(req.query));
     }
   });
 
@@ -70,28 +68,38 @@ app.get([
 ], (req, res) => {
   res.type("application/javascript; charset=utf-8");
   res.end(fs.readFileSync(path.join(__dirname, "../public/build/bundle.js")));
-})
-app.get("/myclip", (req, res) => {
+});
+app.get("/pages/*.js", (req, res) => {
+  res.type("application/javascript; charset=utf-8");
+  res.end(fs.readFileSync(path.join(__dirname,
+      `../dist/pages/${path.basename(req.path)}`)));
+});
+app.get([
+  "/ClipVideo",
+  "/MyClip",
+  "/SyncSession"
+], (req, res) => {
   res.type("text/html; charset=utf-8");
   res.end(`<!DOCTYPE html><html>
 <head>
-
-</head>
-<body>
-  <div id="root1"></div>
-  <div id="root2"></div>
-
-  <script type="module">
-    import MyComponent from "/my_component.js";
-    new MyComponent({
-      target: document.getElementById("root1")
-    });
-
-    import MyFoo from "/my_foo.js";
-    new MyFoo({
-      target: document.getElementById("root2")
+  <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
+      integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg=="
+      crossorigin="anonymous">
+  </script>
+  <script>
+    require.config({
+      paths: {
+          "${req.path}": "/pages${req.path}",
+          'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min'
+      },
+      waitSeconds: 40
     });
   </script>
+  <link type="modulepreload" href="${req.path}.js" />
+  </head>
+  <body>
+  <script src="/pages${req.path}.js"></script>
 </body>
 </html>
   `);
@@ -102,6 +110,7 @@ app.use(express.static(path.join(__dirname, "../dist")));
 app.use(express.static(path.join(__dirname, "../src/lib")));
 
 app.use(sync_session);
+app.use(sync_read);
 
 
 app.get('/test', (req, res, next) => {

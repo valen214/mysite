@@ -45,18 +45,6 @@ function redirectToWebpackDevServer(
   );
 }
 
-function useCopmiledHTML(res: express.Response<any>){
-  res.type("text/html; charset=utf-8");
-  let buf = fs.readFileSync(path.join(
-    __dirname,
-    "../../src/index.html"
-  ));
-  let src = buf.toString("utf-8").replace("<body>",
-      `<body><script src='/pages/sync_session.js'></script>
-      <sync-session />`);
-  res.end(src);
-}
-
 function fetchGoogle(res: express.Response<any>){
   respondsWith(res, "http://www.google.com");
 }

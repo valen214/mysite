@@ -8,6 +8,7 @@
   // new URL(location.href).searchParams.get("src");
   let src_head = "";
   let src_body = "";
+  let useIFrameSrc = true;
   let useIFrame = true;
   let iframe: HTMLIFrameElement;
 
@@ -55,12 +56,12 @@
         match, p1, p2, offset
       ) => {
         let url = p1 || p2;
-        if(p1.startsWith("//")){
-          url = encodeURIComponent("http:" + p1);
-        } else if(p1.startsWith("/")){
-          url = encodeURIComponent("ORIGIN://" + p1)
+        if(url.startsWith("//")){
+          url = encodeURIComponent("http:" + url);
+        } else if(url.startsWith("/")){
+          url = encodeURIComponent("ORIGIN://" + url)
         } else{
-          url = encodeURIComponent(p1);
+          url = encodeURIComponent(url);
         }
         return "href=\"" + location.origin +
           "/sync-session/" + session +
@@ -69,12 +70,12 @@
         match, p1, p2, offset
       ) => {
         let url = p1 || p2;
-        if(p1.startsWith("//")){
-          url = encodeURIComponent("http:" + p1);
-        } else if(p1.startsWith("/")){
-          url = encodeURIComponent("ORIGIN://" + p1)
+        if(url.startsWith("//")){
+          url = encodeURIComponent("http:" + url);
+        } else if(url.startsWith("/")){
+          url = encodeURIComponent("ORIGIN://" + url)
         } else{
-          url = encodeURIComponent(p1);
+          url = encodeURIComponent(url);
         }
         return "src=\"" + location.origin +
           "/sync-session/" + session +
@@ -114,8 +115,7 @@
     // @ts-ignore
     console.log("on before unlaod", document.activeElement.href);
 
-    let pause = 1;
-
+    let pause = 0;
     if(pause){
       e.preventDefault();
       e.returnValue = "Chrome Required";
@@ -206,6 +206,14 @@ iframe {
     <input type="text" bind:value={src} />
     <button on:click={createNewSession}>GO</button>
   </div>
+{:else if useIFrameSrc}
+  <iframe
+    title="sync session content" { src }
+    on:click={e => {
+      console.log("click");
+    }}>
+
+  </iframe>
 {:else if useIFrame}
   <iframe
       title="sync session content"

@@ -16,7 +16,6 @@ let genConfig = ({
   customElement = false,
   path: _path,
 } = {}) => {
-  console.log("customElement:", customElement);
   return {
     entry: entry || {
       bundle: [ './src/index.js' ],
@@ -33,7 +32,7 @@ let genConfig = ({
     output: {
       path: _path || (__dirname + '/dist'),
       filename: '[name].js',
-      chunkFilename: '[name].[id].js'
+      chunkFilename: '[name].[id].js',
     },
     
     devtool: prod ? false : 'source-map',
@@ -137,9 +136,9 @@ module.exports = (env, argv) => {
     genConfig(),
     genConfig({
       entry: {
-        sync_session: [ "./src/pages/SyncSession.svelte" ],
-        clip_video: [ "./src/pages/ClipVideo.svelte" ],
-        my_clip: [ "./src/pages/MyClip.svelte" ],
+        SyncSession: [ "./src/pages/SyncSession.svelte" ],
+        ClipVideo: [ "./src/pages/ClipVideo.svelte" ],
+        MyClip: [ "./src/pages/MyClip.svelte" ],
       },
       // customElement: true,
       path: __dirname + '/dist/pages'
