@@ -1,10 +1,13 @@
 
 
+const oracledb = require("oracledb");
 import express from "express";
 import body_parser from "body-parser";
 import path from "path";
 import fs from "fs";
 import axios from "axios";
+
+import { conn } from "../dbconfig";
 
 import { serveEs6 } from "../util/svelte";
 
@@ -14,6 +17,31 @@ import {
 } from "../util";
 
 const router = express.Router();
+
+
+
+
+async function initTable(){
+  try{
+    let _conn = (await conn)
+    let result = await _conn.execute(
+      "CREATE TABLE test_table_2 ( id NUMBER, data VARCHAR2(20))",
+      {}, {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+      }
+    ).catch((e: any) => {
+      if(e.errorNum === 955){
+
+      } else{
+        console.log("catch clause:", e);
+      }
+    });
+    console.log("result:", result);
+  } catch(e){
+    console.log("error in creating table:", e);
+  }
+}
+initTable();
 
 router.use(body_parser.json());
 

@@ -9,6 +9,7 @@ require('https').globalAgent.options.ca = require('ssl-root-cas/latest').create(
 
 import path from "path";
 import fs from "fs";
+import yargs from 'yargs';
 
 import express from "express";
 // @ts-ignore
@@ -19,7 +20,7 @@ import sync_session from "./routes/sync_session";
 import sync_read from "./routes/sync_read";
 
 const app: express.Application = express()
-const port = process.argv[2] || 3000;
+const port = yargs.argv?.port || yargs.argv?._?.[0] || 3000;
 
 /*
 

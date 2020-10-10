@@ -7,17 +7,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "concurrently -k -n dev,server:build,server:run \"npm:dev\" \"npm:server:cw\" \"npm:server:public\"",
-
     "dev": "rollup -c -w",
-
     "build": "npm run build1 && npm run server:build",
     "build2": "webpack",
     "build1": "rollup -c",
-
     "server": "npm run server:dev",
     "server:cw": "rollup -c -w --server",
     "server:public": "nodemon public/server.js",
-    "server:dev": "concurrently -k -n build,run \"npm:server:cw\" \"nodemon public/server.js\"",
+    "server:dev": "concurrently -k -n build,run \"npm:server:cw\" \"nodemon --delay 1 public/server.js\"",
     "server:dev2": "tsnd --project server/tsconfig.json server/server.ts",
     "server:dev1": "nodemon --watch server -e ts,js --exec \"npm run server:run1\"",
     "server:run": "ts-node --project server/tsconfig.json server/server.ts",
@@ -41,6 +38,7 @@
     "@types/node": "^14.11.1",
     "@types/webpack": "^4.41.22",
     "@types/webpack-dev-server": "^3.11.0",
+    "@types/yargs": "^15.0.8",
     "babel-loader": "^8.1.0",
     "concurrently": "^5.3.0",
     "cross-env": "^7.0.2",
@@ -68,7 +66,8 @@
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",
-    "webpack-hot-middleware": "^2.25.0"
+    "webpack-hot-middleware": "^2.25.0",
+    "yargs": "^16.0.3"
   },
   "dependencies": {
     "@rollup/plugin-json": "^4.1.0",
@@ -79,6 +78,8 @@
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "multer": "^1.4.2",
+    "node-oracledb": "^1.0.2",
+    "oracledb": "^5.0.0",
     "request": "^2.88.2",
     "ssl-root-cas": "^1.3.1"
   }
