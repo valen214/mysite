@@ -4,72 +4,38 @@
 <script lang="ts">
   import Button from "./components/Button.svelte";
   import {
+    init,
     getSession,
-    fetchSrc,
-    processSrc
+    processSrc,
+    createNewSession
   } from "./sync_read/functions";
+  import ToolBar from "./sync_read/ToolBar.svelte";
 
-  let url_input: HTMLInputElement;
+  let url: string;
 
   let session: string = getSession();
   let loading: boolean = true;
   let src: string = null;
   $: contentHTMLPromise = src && processSrc(src);
+  $: url = src;
 
-  async function createNewSession(){
-    let res = await fetch("/sync-read/new-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        src: url_input.value
-      })
-    });
-    let result = await res.json();
-
-    if(!result.success){
-      console.error("create new session failed");
-      return;
-    }
-
-    location.pathname = "/sync-read/" + result.session;
-  }
-
-  (async function(){
-    if(!session){
-      loading = false;
-      return;
-    };
-
-    src = await fetchSrc(session);
-    console.log("src:", src);
-    loading = false;
-    if(src){
-      console.log(`src for session(${session}) exists: ${src}`);
-    } else{
-      console.log("no src! redirected to main page");
-      history.replaceState({
-        src: null
-      }, "sync read", location.origin + "/sync-read");
-    }
-  })();
+  init(
+    session,
+    (_l: boolean) => loading = _l,
+    (_src: string) => src = _src,
+  );
 </script>
 
-<style>
-  .test-class {
-    font-size: 12px;
-  }
 
-  input {
-    border: solid 1px rgba(0, 0, 0, 0.2);
-    height: 2em;
-    line-height: 2em;
-    font-size: 20px;
-    padding-left: 5px;
+<style>
+  :global(body) {
+    margin: 0;
   }
 </style>
 
+<ToolBar
+    on:click={() => createNewSession(url)}
+    bind:url />
 {#if loading}
   Loading
 {:else if src}
@@ -81,15 +47,6 @@
     <p style="color: red">{ error.message }</p>
   {/await}
 {:else}
-  <label>
-    Create New Session with url:
-    <input type="text" bind:this={url_input} />
-  </label>
-  <Button on:click={createNewSession}>
-    Create New Session
-    <div class="test-class" slot="class">A</div>
-  </Button>
-  
   <div>
     Hello World!
   </div>

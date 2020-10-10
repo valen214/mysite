@@ -1,5 +1,6 @@
 
 
+import _path from "path";
 
 export function randomstring(length: number,
   dict="abcdefghijklmnopqrstuvwxyz" +
@@ -9,3 +10,13 @@ export function randomstring(length: number,
     return dict.charAt(Math.random() * dict.length);
   }).join("")
 };
+
+
+export function serverRoot(path?: string){
+  return _path.join(__dirname, path);
+}
+
+
+export function fileFromRoot(path?: string){
+  return path;
+}

@@ -41,10 +41,20 @@ function serverConfig(){
 
 function pagesConfig(){
   return {
-    input: "src/pages/SyncRead.svelte",
+    input: [
+      "src/pages/SyncRead.svelte",
+      "src/pages/MyClip.svelte",
+    ],
     output: {
       format: "es",
       dir: "public/pages/",
+      chunkFileNames(chunkInfo){
+        console.log("chunkFileNames: chunkInfo:",
+            chunkInfo, chunkInfo.replacements,
+            chunkInfo.getFileInfo, chunkInfo.name
+        );
+        return "chunk-[name]-[format].js"; // -[hash]
+      }
     },
     plugins: [
       svelte({
@@ -96,6 +106,10 @@ let template = {
     }, {
       format: "cjs",
       dir: "temp/cjs",
+      chunkFileNames(chunkInfo){
+        console.log("chunkFileNames: chunkInfo:", chunkInfo);
+        return "[name]-[hash].js";
+      }
     }
   ],
 	plugins: [

@@ -1,4 +1,9 @@
-console.log('\n'.repeat(5) + "running server.ts");
+
+console.log(
+    '\n'.repeat(2),
+    "\nrunning", __filename,
+    "\n__dirname:", __dirname
+);
 
 require('https').globalAgent.options.ca = require('ssl-root-cas/latest').create();
 
@@ -14,7 +19,7 @@ import sync_session from "./routes/sync_session";
 import sync_read from "./routes/sync_read";
 
 const app: express.Application = express()
-const port = 3000
+const port = process.argv[2] || 3000;
 
 /*
 
@@ -26,10 +31,12 @@ app.use(middleware(compiler, {
   noInfo: true
 }));
 
+rsync -z -r -e 'ssh -i /mnt/c/Users/User/.ssh/oci_main_instance_priv.openssh.key' \
+/mnt/d/workspace/mysite/public/* ubuntu@150.136.251.80:/home/ubuntu/mysite/public/
+    
 
 */
 
-console.log("__dirname:", __dirname);
 
 app.use(cookieParser());
 
@@ -60,19 +67,10 @@ app.get('/', (req, res) => {
   res.end("HEY THERE!");
 });
 
-
-app.get([
-    "/my_?clip.js",
-    "/my_foo.js",
-    "/my_component.js"
-], (req, res) => {
-  res.type("application/javascript; charset=utf-8");
-  res.end(fs.readFileSync(path.join(__dirname, "../public/build/bundle.js")));
-});
 app.get("/pages/*.js", (req, res) => {
   res.type("application/javascript; charset=utf-8");
   res.end(fs.readFileSync(path.join(__dirname,
-      `../dist/pages/${path.basename(req.path)}`)));
+      `pages/${path.basename(req.path)}`)));
 });
 app.get([
   "/ClipVideo",

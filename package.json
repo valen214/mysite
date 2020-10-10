@@ -6,19 +6,24 @@
   "module": "public/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently -k -n dev,server \"npm:dev\" \"npm:server:dev\"",
+    "start": "concurrently -k -n dev,server:build,server:run \"npm:dev\" \"npm:server:cw\" \"npm:server:public\"",
 
     "dev": "rollup -c -w",
-    "build": "webpack",
 
+    "build": "npm run build1 && npm run server:build",
+    "build2": "webpack",
     "build1": "rollup -c",
 
     "server": "npm run server:dev",
-    "server:dev": "tsnd --project server/tsconfig.json server/server.ts",
+    "server:cw": "rollup -c -w --server",
+    "server:public": "nodemon public/server.js",
+    "server:dev": "concurrently -k -n build,run \"npm:server:cw\" \"nodemon public/server.js\"",
+    "server:dev2": "tsnd --project server/tsconfig.json server/server.ts",
     "server:dev1": "nodemon --watch server -e ts,js --exec \"npm run server:run1\"",
     "server:run": "ts-node --project server/tsconfig.json server/server.ts",
     "server:run1": "npm run server:build && node dist/server.js",
-    "server:build": "tsc -p server",
+    "server:build": "npm run server:build1",
+    "server:build2": "tsc -p server",
     "server:build1": "rollup -c --server",
     "serve:dist": "python -m http.server --directory dist"
   },

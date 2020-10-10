@@ -3,18 +3,23 @@
 import express from "express";
 import body_parser from "body-parser";
 import path from "path";
+import fs from "fs";
 import axios from "axios";
 
 import { serveEs6 } from "../util/svelte";
 
-import { randomstring } from "../util";
+import {
+  randomstring,
+  serverRoot
+} from "../util";
 
 const router = express.Router();
 
 router.use(body_parser.json());
 
-router.get("/sync-read/SyncRead.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../public/build/SyncRead.js"));
+router.get("/sync-read/*.js", (req, res) => {
+  res.type("application/javascript; charset=utf-8");
+  res.end(fs.readFileSync(serverRoot(`pages/${path.basename(req.path)}`)));
 });
 
 const session_storage: {
