@@ -18,10 +18,11 @@ async function getPassword(){
     output: process.stdout
   });
   
-  return new Promise(res => {
+  return await new Promise(res => {
     rl.question(
       'Enter database passphrase: ',
       (password: string) => {
+        console.log("password entered");
         rl.close();
         res(password);
       }

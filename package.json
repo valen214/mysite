@@ -13,7 +13,7 @@
     "build1": "rollup -c",
     "server": "npm run server:dev",
     "server:cw": "rollup -c -w --server",
-    "server:public": "nodemon public/server.js",
+    "server:public": "nodemon --delay 0.5 public/server.js",
     "server:dev": "concurrently -k -n build,run \"npm:server:cw\" \"nodemon --delay 1 public/server.js\"",
     "server:dev2": "tsnd --project server/tsconfig.json server/server.ts",
     "server:dev1": "nodemon --watch server -e ts,js --exec \"npm run server:run1\"",

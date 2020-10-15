@@ -18,19 +18,12 @@ import cookieParser from "cookie-parser";
 
 import sync_session from "./routes/sync_session";
 import sync_read from "./routes/sync_read";
+import http_request from "./routes/http_request";
 
 const app: express.Application = express()
 const port = yargs.argv?.port || yargs.argv?._?.[0] || 3000;
 
 /*
-
-const webpack = require('webpack');
-const middleware = require('webpack-dev-middleware');
-const compiler = webpack(require("../webpack.config.js"));
-
-app.use(middleware(compiler, {
-  noInfo: true
-}));
 
 rsync -z -r -e 'ssh -i /mnt/c/Users/User/.ssh/oci_main_instance_priv.openssh.key' \
 /mnt/d/workspace/mysite/public/* ubuntu@150.136.251.80:/home/ubuntu/mysite/public/
@@ -52,7 +45,7 @@ app.all(/.*/, (req, res, next) => {
   res.on("finish", () => {});
   res.on("close", () => {
     let { statusCode: code, statusMessage: msg } = res;
-    console.log(`${req_line.padEnd(60, " ")} => ${code} ${msg}`);
+    console.log(`${req_line.padEnd(60, " ")} => \x1B\x5B38;2;0;255;0m${code} ${msg}`);
     if(Object.keys(req.query).length){
       // console.log("query:", JSON.stringify(req.query));
     }
@@ -110,6 +103,7 @@ app.use(express.static(path.join(__dirname, "../src/lib")));
 
 app.use(sync_session);
 app.use(sync_read);
+app.use(http_request);
 
 
 app.get('/test', (req, res, next) => {

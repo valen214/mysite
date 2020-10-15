@@ -44,6 +44,7 @@ function pagesConfig(){
     input: [
       "src/pages/SyncRead.svelte",
       "src/pages/MyClip.svelte",
+      "src/pages/HttpRequest.svelte",
     ],
     output: {
       format: "es",
