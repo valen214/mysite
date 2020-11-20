@@ -9,19 +9,20 @@ require('https').globalAgent.options.ca = require('ssl-root-cas/latest').create(
 
 import path from "path";
 import fs from "fs";
-import yargs from 'yargs';
-
 import express from "express";
 // @ts-ignore
 import cookieParser from "cookie-parser";
 // const cookieParser = require("cookie-parser");
 
+import { serveEs6 } from "./util/svelte";
+
 import sync_session from "./routes/sync_session";
 import sync_read from "./routes/sync_read";
 import http_request from "./routes/http_request";
+import soul_worker from "./routes/soul_worker";
 
 const app: express.Application = express()
-const port = yargs.argv?.port || yargs.argv?._?.[0] || 3000;
+const port = 3000;
 
 /*
 
@@ -35,7 +36,7 @@ rsync -z -r -e 'ssh -i /mnt/c/Users/User/.ssh/oci_main_instance_priv.openssh.key
 app.use(cookieParser());
 
 // log request
-app.all(/.*/, (req, res, next) => {
+app.all(/.*/, function log_request(req, res, next){
   let req_line = `${req.method} ${req.path} HTTP/${req.httpVersion}`;
   let out = Array.from(req_line).map((v, i) => ( `\x1B\x5B38;5;${
     Math.floor((232 - 17) * Math.random()) + 17
@@ -63,38 +64,19 @@ app.get('/', (req, res) => {
 
 app.get("/pages/*.js", (req, res) => {
   res.type("application/javascript; charset=utf-8");
-  res.end(fs.readFileSync(path.join(__dirname,
-      `pages/${path.basename(req.path)}`)));
+  res.end(fs.readFileSync(path.join(
+      __dirname,
+      `pages/${path.basename(req.path)}`
+  )));
 });
 app.get([
   "/ClipVideo",
   "/MyClip",
-  "/SyncSession"
+  "/SyncSession",
+  "/SoulWorker",
+  /^\/\w*$/
 ], (req, res) => {
-  res.type("text/html; charset=utf-8");
-  res.end(`<!DOCTYPE html><html>
-<head>
-  <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
-      integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg=="
-      crossorigin="anonymous">
-  </script>
-  <script>
-    require.config({
-      paths: {
-          "${req.path}": "/pages${req.path}",
-          'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min'
-      },
-      waitSeconds: 40
-    });
-  </script>
-  <link type="modulepreload" href="${req.path}.js" />
-  </head>
-  <body>
-  <script src="/pages${req.path}.js"></script>
-</body>
-</html>
-  `);
+  serveEs6(`./pages${req.path}.js`, res);
 });
 
 
@@ -104,6 +86,8 @@ app.use(express.static(path.join(__dirname, "../src/lib")));
 app.use(sync_session);
 app.use(sync_read);
 app.use(http_request);
+app.use(soul_worker);
+
 
 
 app.get('/test', (req, res, next) => {
@@ -138,7 +122,7 @@ app.post("/multi", upload.single("f"), (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`server listening at http://localhost:${port}`)
 })
 
 

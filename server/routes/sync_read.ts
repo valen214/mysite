@@ -7,7 +7,7 @@ import path from "path";
 import fs from "fs";
 import axios from "axios";
 
-import { conn } from "../dbconfig";
+import { getConnection } from "../dbconfig";
 
 import { serveEs6 } from "../util/svelte";
 
@@ -23,7 +23,11 @@ const router = express.Router();
 
 async function initTable(){
   try{
-    let _conn = (await conn)
+    let _conn = (await getConnection());
+    if(!_conn){
+      console.warn("EMPTY DATABASE CONNECTION!");
+      return;
+    }
     let result = await _conn.execute(
       "CREATE TABLE test_table_2 ( id NUMBER, data VARCHAR2(20))",
       {}, {

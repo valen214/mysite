@@ -6,3 +6,9 @@ export function injectScript(url: string, callback?: EventListener){
   if(callback) script.onload = callback;
   document.head.appendChild(script);
 }
+
+
+export function addComma(integer: number){
+  return integer.toString().replace(
+    /\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+}

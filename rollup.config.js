@@ -1,4 +1,6 @@
 
+import fs from "fs";
+import path from "path";
 
 import svelte from 'rollup-plugin-svelte';
 import svelte_preprocess from "svelte-preprocess";
@@ -17,7 +19,10 @@ const production = process.env.NODE_ENV === "production";
 
 function serverConfig(){
   return {
-    input: "server/server.ts",
+    input: {
+      "server": "server/server.ts",
+      "temp": "server/temp.ts",
+    },
     output: {
       format: "cjs",
       dir: "public/",
@@ -40,20 +45,50 @@ function serverConfig(){
 }
 
 function pagesConfig(){
+  function getInput(){
+    let obj = {
+      "SyncRead": "src/pages/SyncRead.svelte",
+      "MyClip": "src/pages/MyClip.svelte",
+      "HttpRequest": "src/pages/HttpRequest.svelte",
+    };
+
+    fs.readdirSync(
+      path.join("src/pages"), {
+      withFileTypes: true
+    }).forEach((dirent) => {
+      // console.log("checking entry: ",dirent.name);
+      if(dirent.isFile()){
+        
+      } else {
+        let name = dirent.name;
+        let pageEntryPath = path.join("src/pages", name, "index.svelte");
+        if(fs.existsSync(pageEntryPath)){
+          let chunkName = name.split(/[-_]/g).map(word => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          }).join("");
+          obj[chunkName] = pageEntryPath;
+        }
+      }
+    });
+
+    return obj;
+  }
+
   return {
-    input: [
-      "src/pages/SyncRead.svelte",
-      "src/pages/MyClip.svelte",
-      "src/pages/HttpRequest.svelte",
-    ],
+    input: getInput(),
+    watch: {
+      include: [
+        "src/**/*"
+      ]
+    },
     output: {
       format: "es",
       dir: "public/pages/",
+      entryFileNames(chunkInfo){
+        console.log("entryFileNames(): processing chunk:", chunkInfo.name);
+        return chunkInfo.name + ".js";
+      }, // "[name].js",
       chunkFileNames(chunkInfo){
-        console.log("chunkFileNames: chunkInfo:",
-            chunkInfo, chunkInfo.replacements,
-            chunkInfo.getFileInfo, chunkInfo.name
-        );
         return "chunk-[name]-[format].js"; // -[hash]
       }
     },
@@ -78,75 +113,12 @@ function pagesConfig(){
   };
 }
 
-export default (args) => {
+export default function(args){
   console.log("rollup command line arguments:", args);
 
   if(args["server"]){
-    delete args["server"];
     return serverConfig();
   }
 
   return pagesConfig();
-};
-
-
-
-
-
-let template = {
-	input: {
-    MyClip: 'src/pages/MyClip.svelte',
-    SyncSession: "src/pages/SyncSession.svelte",
-  },
-	output: [
-    {
-      name: 'app',
-      sourcemap: true,
-      format: 'es',
-      dir: 'public/pages/',
-    }, {
-      format: "cjs",
-      dir: "temp/cjs",
-      chunkFileNames(chunkInfo){
-        console.log("chunkFileNames: chunkInfo:", chunkInfo);
-        return "[name]-[hash].js";
-      }
-    }
-  ],
-	plugins: [
-		svelte({
-			// enable run-time checks when not in production
-			dev: !production,
-			// we'll extract any component CSS out into
-			// a separate file - better for performance
-			css: css => {
-				css.write('bundle.css');
-      },
-      preprocess: svelte_preprocess(),
-    }),
-    commonjs(),
-    // probably only need when input has .ts file directly
-    // typescript({
-    //   tsconfig: "node_modules/@tsconfig/svelte/tsconfig.json",
-    //   include: [ "src/**/*", "src/node_modules" ],
-    //   exclude: [ "node_modules/*", "__sapper__/*", "public/*" ],
-    //   sourceMap: !production,
-    // }),
-
-		// If you have external dependencies installed from
-		// npm, you'll most likely need these plugins. In
-		// some cases you'll need additional configuration -
-		// consult the documentation for details:
-		// https://github.com/rollup/plugins/tree/master/packages/commonjs
-		resolve({
-			browser: true,
-			dedupe: ['svelte']
-		}),
-		// If we're building for production (npm run build
-		// instead of npm run dev), minify
-		production && terser()
-	],
-	watch: {
-		clearScreen: false
-	}
 };
