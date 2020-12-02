@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width,initial-scale=1'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+
+  <title>My Board</title>
+  <!--
+  <link rel='icon' type='image/png' href='/favicon.png'>
+  <link rel='stylesheet' href='/global.css'>
+	<link rel='stylesheet' href='/build/bundle.css'>
+  -->
+
+  <script src="https://unpkg.com/vue@next"></script>
+
+  <style>
+    html, body {
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div v-for="item in items">
+      {{ item.title }}
+      {{ item.content }}
+    </div>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data(){
+        return {
+          "items": [{
+            "title": "HEY",
+            "content": "HI",
+          }, {
+            "title": "OKAY",
+            "content": "BYE",
+          }]
+        }
+      }
+    });
+    
+    app.mount("#app");
+  </script>
+</body>
+</html>

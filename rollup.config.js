@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 
+import alias from "@rollup/plugin-alias";
 import svelte from 'rollup-plugin-svelte';
 import svelte_preprocess from "svelte-preprocess";
 import resolve from '@rollup/plugin-node-resolve';
@@ -9,6 +10,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from "@rollup/plugin-json";
 import { terser } from 'rollup-plugin-terser';
 import typescript from '@rollup/plugin-typescript';
+import vue from 'rollup-plugin-vue'
 import builtins from 'builtin-modules'
 
 
@@ -22,6 +24,12 @@ function serverConfig(){
     input: {
       "server": "server/server.ts",
       "temp": "server/temp.ts",
+    },
+    watch: {
+      include: "server/server.ts",
+      exclude: [
+        "src/**/*"
+      ]
     },
     output: {
       format: "cjs",
@@ -79,6 +87,9 @@ function pagesConfig(){
     watch: {
       include: [
         "src/**/*"
+      ],
+      exclude: [
+        "server/**/*"
       ]
     },
     output: {
@@ -98,17 +109,19 @@ function pagesConfig(){
         preprocess: svelte_preprocess({}),
       }),
       commonjs(),
-      typescript({
-        tsconfig: false,
-        allowSyntheticDefaultImports: true
-      }),
       resolve({
         browser: true,
         dedupe: [ 'svelte' ]
       }),
+      typescript({
+        tsconfig: false,
+        allowSyntheticDefaultImports: true
+      }),
     ],
     watch: {
-      clearScreen: false
+      clearScreen: false,
+      include: 'src/**',
+      exclude: 'node_modules/**'
     }
   };
 }
@@ -116,8 +129,39 @@ function pagesConfig(){
 export default function(args){
   console.log("rollup command line arguments:", args);
 
-  if(args["server"]){
+  if(args["vue"]){
+    delete args["vue"];
+    return {
+      input: "src/pages/my-board/index.ts",
+      output: {
+        format: 'esm',
+        file: 'dist/a.js'
+      },
+      external: ['vue'],
+      plugins: [
+        commonjs(),
+        vue({
+        }),
+        alias({
+          resolve: [ '.js', '.ts' ],
+          entries: [
+            {
+              find: 'vue',
+              replacement: 'node_modules/vue/dist/vue.runtime.esm-browser.js'
+            }
+          ]
+        }),
+      ]
+    };
+  } else if(args["server"]){
+    delete args["server"];
     return serverConfig();
+  } else if(args["both"]){
+    delete args["both"];
+    return [
+      serverConfig(),
+      pagesConfig(),
+    ];
   }
 
   return pagesConfig();

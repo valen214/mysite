@@ -23,9 +23,10 @@ export async function getConnection(){
 
   cached_connection_promise = new Promise(async resolve => {
     try{
+      const dir = 'D:\\software\\instantclient_19_8'
       oracledb.initOracleClient({
-        libDir: 'D:\\software\\instantclient_19_8',
-        configDir: "D:\\software\\instantclient_19_8\\network\\admin",
+        libDir: dir,
+        configDir: dir + "\\network\\admin",
       });
       console.log("oracle database client initialized");
     } catch(e){

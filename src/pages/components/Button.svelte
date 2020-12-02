@@ -3,6 +3,13 @@
 
 <script>
   // https://svelte.dev/tutorial/actions
+  /**
+   * css class specificity problem could be solved like
+   * :global(.btn-class.btn-class) { }
+   * 
+   * use nohover to remove inline style,
+   * considering adding a css class wrapper to avoid inline style
+   */
 
   export let id = "";
   export let href = undefined;
