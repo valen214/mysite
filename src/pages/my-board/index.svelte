@@ -9,19 +9,16 @@
   import {
     getItem,
     listItem,
-  } from "./functions/items";
+  } from "./model/items";
 
-  let items: ItemStore;
+  let items: Item[];
   
   listItem().then(ids => {
     return ids.map(id => {
       return getItem(id);
     })
   }).then(async _items => {
-    items = (await Promise.all(_items)).reduce((l, r) => {
-      l[r.id] = r;
-      return l;
-    }, {});
+    items = (await Promise.all(_items));
   });
 
 

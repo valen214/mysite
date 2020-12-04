@@ -10,7 +10,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from "@rollup/plugin-json";
 import { terser } from 'rollup-plugin-terser';
 import typescript from '@rollup/plugin-typescript';
-import vue from 'rollup-plugin-vue'
+// import vue from 'rollup-plugin-vue'
 import builtins from 'builtin-modules'
 
 
@@ -107,6 +107,7 @@ function pagesConfig(){
       svelte({
         dev: !production,
         preprocess: svelte_preprocess({}),
+        emitCss: false,
       }),
       commonjs(),
       resolve({

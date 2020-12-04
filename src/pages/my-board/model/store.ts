@@ -1,37 +1,11 @@
 
 import type { Item } from "./items";
 
-import { randomstring } from "../../util"
-
 export class ItemStore
 {
   private store: Map<string, Item> = new Map<string, Item>();
   constructor(){
 
-  }
-
-  getLastBrowsedItem(){
-
-  }
-
-  async getRootItem(){
-    let root = localStorage.getItem("ROOT_ITEM_ID");
-    if(root){
-      return this.downloadItem(root);
-    } else {
-      let id = (
-        r => `${r(4)}-${r(4)}-${r(6)}-${r(4)}`
-      )(randomstring);
-      let item: Item = {
-        id,
-        type: "folder",
-        children: []
-      };
-
-      localStorage.setItem("ROOT_ITEM_ID", id);
-      this.uploadItem(item);
-      return item;
-    }
   }
 
   listItem<B extends boolean>(
