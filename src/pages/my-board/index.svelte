@@ -7,7 +7,7 @@
   import TopBar from "./TopBar.svelte";
   import ExplorerPanel from "./explorer-panel";
   import ContentPanel from "./ContentPanel.svelte";
-
+  
   let app = new MyBoard();
   let items: Item[];
   let showing_item: Item = null;
