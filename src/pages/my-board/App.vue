@@ -6,6 +6,8 @@ import ExplorerPanel from "./components/TheExplorerPanel.vue";
 import { MyBoard } from './model/index';
 
 // vue serve src\pages\my-board\App.vue
+// npx vue-cli-service serve src\pages\my-board\App.vue
+// npx -p @vue/cli vue serve src\pages\my-board\App.vue
 
 export default {
   components: {
@@ -25,6 +27,7 @@ export default {
 
 <template>
   <div class="root">
+    say Hi
     <TopBar class="top-bar"/>
     <ExplorerPanel
         class="explorer-panel"

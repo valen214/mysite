@@ -1,28 +1,25 @@
 
 
 <script lang="ts">
-  import type { Item, ItemStore } from "./index";
+  import type { Item } from "./model";
+  import { MyBoard } from "./model";
 
   import TopBar from "./TopBar.svelte";
-  import ExplorerPanel from "./explorer-panel/index.svelte";
+  import ExplorerPanel from "./explorer-panel";
   import ContentPanel from "./ContentPanel.svelte";
-  import {
-    getItem,
-    listItem,
-  } from "./model/items";
-
-  let items: Item[];
   
-  listItem().then(ids => {
-    return ids.map(id => {
-      return getItem(id);
-    })
-  }).then(async _items => {
-    items = (await Promise.all(_items));
+  let app = new MyBoard();
+  let items: Item[];
+  let showing_item: Item = null;
+
+  app.store.getRootItem().then(item => Promise.allSettled(
+    item.children.map(id => app.store.downloadItem(id))
+  )).then(results => results.map(result => {
+    return result.status === "fulfilled" ? result.value : null;
+  })).then(values => {
+    items = values.filter(Boolean);
   });
 
-
-  let showing_item: Item = null;
 
   (function test(){
     setTimeout(() => {
