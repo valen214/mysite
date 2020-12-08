@@ -132,25 +132,22 @@ export default function(args){
   if(args["vue"]){
     delete args["vue"];
     return {
-      input: "src/pages/my-board/index.ts",
+      input: "src/pages/my-board/App.vue",
       output: {
-        format: 'esm',
-        file: 'dist/a.js'
+        format: "umd",
+        file: "public/pages/MyBoard.umd.js",
+        name: 'MyBoard',
+        globals: {
+          vue: 'Vue',
+        },
       },
-      external: ['vue'],
+      external: [ 'vue' ],
       plugins: [
-        commonjs(),
-        vue({
+        typescript({
+          tsconfig: false,
+          module: 'es2015',
         }),
-        alias({
-          resolve: [ '.js', '.ts' ],
-          entries: [
-            {
-              find: 'vue',
-              replacement: 'node_modules/vue/dist/vue.runtime.esm-browser.js'
-            }
-          ]
-        }),
+        vue(),
       ]
     };
   } else if(args["server"]){

@@ -14,10 +14,11 @@ export class ItemStore
 
   }
 
-  async getRootItem(){
+  async getRootItem(): Promise<Item & { type: "folder" }> {
     let root = localStorage.getItem("ROOT_ITEM_ID");
     if(root){
-      return this.downloadItem(root);
+      let item = await this.downloadItem(root);
+      return item as (Item & { type: "folder" });
     } else {
       let id = (
         r => `${r(4)}-${r(4)}-${r(6)}-${r(4)}`
