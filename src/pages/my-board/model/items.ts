@@ -2,9 +2,11 @@
 
 export type Item = {
   id: string
+  type: "image" | "folder" | "text"
   download_time?: number
   icon?: string | BinaryType
   thumbnail?: string | BinaryType
+  parent?: string | string[]
 } & ({
   type: "image"
   title?: string
@@ -14,9 +16,9 @@ export type Item = {
   name?: string
   children?: string[]
 } | {
-  type?: "text"
+  type: "text"
   title?: string
-  content: any
+  content?: any
 })
 
 

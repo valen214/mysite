@@ -3,9 +3,11 @@
 
   import { createEventDispatcher } from "svelte";
   import Button from "../../components/Button.svelte";
+  import MyBoard from "../model/MyBoard";
   
   const dispatch = createEventDispatcher();
 
+  export let app: MyBoard;
   export let className = "";
   export let items: Item[] | ItemStore = [];
 
@@ -28,6 +30,17 @@
     </Button>
     <hr />
   {/each}
+  <div class="bottom-action-panel">
+    <hr />
+    <Button on:click={() => {
+          console.log("HEY");
+          app.createItem({
+            "type": "text"
+          });
+        }}>
+      Create Item
+    </Button>
+  </div>
 </div>
 
 <style>
@@ -38,7 +51,15 @@
   }
 
   .explorer-panel {
+    position: relative;
     border-right: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  .bottom-action-panel {
+    position: absolute;
+    bottom: 0;
+    height: 80px;
+    width: 100%;
   }
 
   :global(.item-tile.item-tile) {

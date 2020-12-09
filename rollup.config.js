@@ -116,14 +116,10 @@ function pagesConfig(){
       }),
       typescript({
         tsconfig: false,
+        target: "es6",
         allowSyntheticDefaultImports: true
       }),
     ],
-    watch: {
-      clearScreen: false,
-      include: 'src/**',
-      exclude: 'node_modules/**'
-    }
   };
 }
 

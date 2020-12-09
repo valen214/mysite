@@ -1,34 +1,25 @@
 
 
 <script lang="ts">
-  import type { Item, ItemStore } from "./index";
+  import type { Item } from "./index";
 
   import TopBar from "./TopBar.svelte";
   import ExplorerPanel from "./explorer-panel/index.svelte";
   import ContentPanel from "./ContentPanel.svelte";
-  import {
-    getItem,
-    listItem,
-  } from "./model/items";
 
-  let items: Item[];
-  
-  listItem().then(ids => {
-    return ids.map(id => {
-      return getItem(id);
-    })
-  }).then(async _items => {
-    items = (await Promise.all(_items));
-  });
+  import MyBoard from "./model/MyBoard";
 
+  let app = new MyBoard();
+  let listed_items: Item[];
+  $: {
+    listed_items = app.store.listItem(app.active_item?.id, true)
+  }
+  $: active_item = app.active_item;
 
-  let showing_item: Item = null;
+  app.on("activeitemchange", () => {
+    active_item = app.active_item;
+  })
 
-  (function test(){
-    setTimeout(() => {
-      showing_item = items[1];
-    }, 200)
-  })();
 </script>
 
 
@@ -37,14 +28,15 @@
   <div class="page-content">
     <ExplorerPanel
         className=""
-        { items }
+        { app }
+        items={listed_items}
         on:item_click={e => {
           let key = e?.detail?.key;
-          showing_item = items[key];
+          app.viewItem(key);
         }}/>
     <ContentPanel
         className=""
-        item={showing_item}/>
+        item={active_item}/>
   </div>
 </div>
 
