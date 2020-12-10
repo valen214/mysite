@@ -1,16 +1,27 @@
 <script lang="ts">
   import type { Item, ItemStore } from "../index";
 
-  import { createEventDispatcher } from "svelte";
   import Button from "../../components/Button.svelte";
-  import MyBoard from "../model/MyBoard";
+
+  import app from "../index";
   
-  const dispatch = createEventDispatcher();
-
-  export let app: MyBoard;
   export let className = "";
-  export let items: Item[] | ItemStore = [];
+  let items_id: string[] = [];
+  $: items = items_id.map(id => app.store.get(id));
 
+  app.on("activefolderchange", (__items_id) => {
+    // items = app.current_item_hierarchy.map(id => app.store.get(id));
+    items_id = __items_id;
+  }).on("activeitemmodified", item => {
+    if(items_id.includes(item.id)){
+      items = items_id.map(id => {
+        if(id === item.id){
+          return item;
+        }
+        return app.store.get(id)
+      });
+    }
+  });
 
 
 </script>
@@ -22,25 +33,12 @@
         nohover
         className="item-tile"
         on:click={() => {
-          dispatch("item_click", {
-            key
-          });
+          app.viewItem(item.id);
         }}>
       { "title" in item ? item.title : "" }
     </Button>
     <hr />
   {/each}
-  <div class="bottom-action-panel">
-    <hr />
-    <Button on:click={() => {
-          console.log("HEY");
-          app.createItem({
-            "type": "text"
-          });
-        }}>
-      Create Item
-    </Button>
-  </div>
 </div>
 
 <style>
@@ -52,14 +50,6 @@
 
   .explorer-panel {
     position: relative;
-    border-right: 1px solid rgba(0, 0, 0, 0.2);
-  }
-
-  .bottom-action-panel {
-    position: absolute;
-    bottom: 0;
-    height: 80px;
-    width: 100%;
   }
 
   :global(.item-tile.item-tile) {

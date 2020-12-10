@@ -40,6 +40,7 @@ function serverConfig(){
       commonjs(),
       typescript({
         tsconfig: false,
+        target: "es6",
         allowSyntheticDefaultImports: true
       }),
       json(),
@@ -85,6 +86,7 @@ function pagesConfig(){
   return {
     input: getInput(),
     watch: {
+      clearScreen: false,
       include: [
         "src/**/*"
       ],

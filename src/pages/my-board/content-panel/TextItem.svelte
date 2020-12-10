@@ -2,10 +2,23 @@
   import type { Item } from "../index";
   import Button from "../../components/Button.svelte";
 
-  export let item: Item & { type?: "text" };
   export let className: string;
+  
+  import app from "../index";
+
+  export let item: Item & { type?: "text" };
 
   let mode: "edit" | "view" = "view";
+
+  $: {
+    item?.title;
+    item?.content;
+    app.dispatch("activeitemmodified", item);
+  }
+
+  app.on("saveactiveitem", () => {
+    app.saveItem(item);
+  });
 </script>
 
 
@@ -21,12 +34,16 @@
     
 
   {:else}
-    { item?.title }
-    
-    { item?.content }
+    <div class="title-row">
+      { item?.title || "" }
+    </div>
+    <div class="content-row">
+      { item?.content || "" }
+    </div>
 
     <Button className="edit-button"
         on:click={() => {
+          app.dispatch("activeitemmodified", item);
           mode = "edit";
         }}>edit</Button>
   {/if}
@@ -58,6 +75,7 @@
 
   .content-row {
     flex-grow: 1;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
   }
   .content-row textarea {
     height: 100%;
@@ -66,7 +84,6 @@
     padding: 5px;
     resize: none;
     border: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
   }
 
   .text-item :global(.edit-button) {

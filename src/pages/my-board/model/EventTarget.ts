@@ -33,7 +33,7 @@ export default class EventTarget
     }
     return this;
   }
-  protected dispatch(event: string, data: any){
+  protected dispatch(event: string, data?: any){
     let listeners = this._event_listeners.get(event);
     if(!listeners) return;
     for(let entry of listeners){

@@ -7,6 +7,7 @@ export type Item = {
   icon?: string | BinaryType
   thumbnail?: string | BinaryType
   parent?: string | string[]
+  modified?: boolean
 } & ({
   type: "image"
   title?: string
@@ -20,6 +21,10 @@ export type Item = {
   title?: string
   content?: any
 })
+
+export type ItemFolder = Item & {
+  type: "folder"
+};
 
 
 export async function getItem(id: string): Promise<Item> {

@@ -1,24 +1,14 @@
 
-
 <script lang="ts">
   import type { Item } from "./index";
 
   import TopBar from "./TopBar.svelte";
   import ExplorerPanel from "./explorer-panel/index.svelte";
+  import SideActionPanel from "./components/SideActionPanel.svelte";
   import ContentPanel from "./ContentPanel.svelte";
 
-  import MyBoard from "./model/MyBoard";
+  import app from "./index";
 
-  let app = new MyBoard();
-  let listed_items: Item[];
-  $: {
-    listed_items = app.store.listItem(app.active_item?.id, true)
-  }
-  $: active_item = app.active_item;
-
-  app.on("activeitemchange", () => {
-    active_item = app.active_item;
-  })
 
 </script>
 
@@ -26,17 +16,11 @@
 <div class="root">
   <TopBar />
   <div class="page-content">
-    <ExplorerPanel
-        className=""
-        { app }
-        items={listed_items}
-        on:item_click={e => {
-          let key = e?.detail?.key;
-          app.viewItem(key);
-        }}/>
-    <ContentPanel
-        className=""
-        item={active_item}/>
+    <div class="side-panel-container">
+      <ExplorerPanel className="" />
+      <SideActionPanel />
+    </div>
+    <ContentPanel className=""/>
   </div>
 </div>
 
@@ -67,5 +51,12 @@
     display: grid;
     grid-template-columns: 350px 1fr;
     height: 100%;
+  }
+
+  .side-panel-container {
+    display: grid;
+    grid-template-rows: auto 80px;
+    height: 100%;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
   }
 </style>

@@ -1,9 +1,21 @@
 <script lang="ts">
   import type { Item } from "./index";
   import TextItem from "./content-panel/TextItem.svelte";
+  import MyBoard from "./model/MyBoard";
+  
+  import app from "./index";
 
   export let className = "";
-  export let item: Item = null;
+  let item: Item = null;
+
+  
+  app.on("activeitemchange", (active_item_id) => {
+    item = app.active_item;
+    console.assert(active_item_id === item.id,
+        "active_item in app does not equal to listener info");
+  })
+
+
 </script>
 
 {#if item?.type === "image"}
