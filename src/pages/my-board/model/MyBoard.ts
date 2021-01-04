@@ -1,6 +1,7 @@
 
 import EventTarget, { EventListener } from "./EventTarget";
 import type { Item, ItemFolder } from "./index";
+import { applyMixins } from "./meta";
 import { ItemStore } from "./store";
 import { generateID, toID } from "./util";
 
@@ -21,6 +22,8 @@ interface MyBoard extends EventTarget {
   on(event: "saveactiveitem", listener: EventListener<void>): MyBoard
   on(event: "item_modified", listener: EventListener<Item>): MyBoard
   on(event: string, listener: EventListener): any | void
+
+  init(): void;
 }
 class MyBoard
 {
@@ -50,9 +53,6 @@ class MyBoard
     }
   }
 
-  private _current_item_hierarchy: string[] = [];
-  get current_item_hierarchy(){ return this._current_item_hierarchy; }
-
 
   constructor(){
     this.store = new ItemStore();
@@ -68,18 +68,38 @@ class MyBoard
       this.active_folder = item;
     });
   }
+  init(){
+    
+  }
 
   periodicUpdate(){
     
   }
 
-  private addChildToParent(child: Item, parent: ItemFolder){
-
+  async onCreateItemClick(){
+    
   }
-  createItem(
+
+  async createItem(
       arg?: Omit<Item, "id">,
       parent?: Item
   ){
+    console.log("creating item");
+    fetch("/my-clip/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...arg,
+        parent
+      })
+    }).then(res => res.text()
+    ).then(res => {
+      console.log(res);
+    })
+
+
     let item = this.store.createItem(arg);
 
     if(parent){
@@ -107,7 +127,6 @@ class MyBoard
     }
 
     this.active_item_id = item.id;
-    this._current_item_hierarchy.push(item.id);
     this.dispatch("createitem", item.id);
   }
 
@@ -119,6 +138,18 @@ class MyBoard
 
 
   saveItem(item: Item, parent?: string | Item){
+    fetch("/my-clip/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: "HELLO WORLD!"
+    }).then(res => res.text()
+    ).then(res => {
+      console.log(res);
+    });
+
+
     delete item.modified;
     this.store.uploadItem(item);
     if(!parent){
@@ -180,21 +211,6 @@ class MyBoard
   }
 }
 
-function applyMixins(derivedConstructor: any, constructors: any[]){
-  constructors.forEach(baseConstructor => {
-    Object.getOwnPropertyNames(baseConstructor.prototype).forEach(name => {
-      Object.defineProperty(
-        derivedConstructor.prototype,
-        name,
-        Object.getOwnPropertyDescriptor(baseConstructor.prototype, name)
-      );
-    })
-  })
-
-  console.log(derivedConstructor);
-
-  return derivedConstructor
-}
 applyMixins(MyBoard, [ EventTarget ]);
 
 console.log(EventTarget);

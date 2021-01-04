@@ -25,36 +25,3 @@ export type Item = {
 export type ItemFolder = Item & {
   type: "folder"
 };
-
-
-export async function getItem(id: string): Promise<Item> {
-
-  return [{
-    type: "text",
-    title: "HI",
-    content: "OK",
-  }, {
-    type: "text",
-    title: "ITEM 2",
-    content: "HELO",
-  }].reduce((l, r: any, i) => {
-    r.id = i;
-    l[i] = r;
-    return l;
-  }, {})[id];
-}
-
-
-export async function listItem(
-    id?: string
-): Promise<string[]>{
-  return ["0", "1"];
-}
-
-
-export async function moveItem(
-  id: string,
-  target: string
-){
-
-}

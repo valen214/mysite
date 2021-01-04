@@ -1,5 +1,5 @@
 
-import type { Item } from "./items";
+import type { Item, ItemFolder } from "./items";
 import { generateID, toID } from "./util";
 
 /**
@@ -8,6 +8,25 @@ import { generateID, toID } from "./util";
  * ItemStore::store is the local cache
  * and assume localStorage is the remote
  */
+export interface ItemStore
+{
+  set(item: Item): void
+
+  get(id: string): Item
+  get(id: string, local?: true): Item
+  get(id: string, local: false): Promise<Item>
+
+  createItem(arg?: Omit<Item, "id">): Item;
+  listItem<B extends boolean>(
+    id: string, local?: B
+  ): B extends true ? Item[] : Promise<Item[]>;
+
+  downloadItem(id: string, overwrite?: boolean): Promise<Item>;
+
+  uploadItem(arg: Item | string): void;
+
+  addChildTo(child: Item, parent: ItemFolder): void;
+}
 export class ItemStore
 {
   private store: Map<string, Item> = new Map<string, Item>();
@@ -20,9 +39,6 @@ export class ItemStore
   }
 
   // get<B extends boolean>(id: string, local?: B): B extends false ? Promise<Item> : Item
-  get(id: string): Item
-  get(id: string, local?: true): Item
-  get(id: string, local: false): Promise<Item>
   get(id: string, local: boolean = true): Item | Promise<Item>{
     let item: Item | Promise<Item>;
     if(local){
@@ -43,13 +59,11 @@ export class ItemStore
       ...arg,
     } as Item;
 
+
     this.set(item);
     return item;
   }
 
-  listItem<B extends boolean>(
-    id: string, local?: B
-  ): B extends true ? Item[] : Promise<Item[]>
   listItem(id: string, local: boolean = false): Promise<Item[]> | Item[] {
     if(!id){
       return [];
@@ -102,6 +116,11 @@ export class ItemStore
     } else {
       item = arg;
     }
-    localStorage.setItem(item.id, JSON.stringify(item));
+
+    try{
+      localStorage.setItem(item.id, JSON.stringify(item));
+    } catch(e){
+
+    }
   }
 }

@@ -19,40 +19,6 @@ import builtins from 'builtin-modules'
 // use cross-env to set
 const production = process.env.NODE_ENV === "production";
 
-function serverConfig(){
-  return {
-    input: {
-      "server": "server/server.ts",
-      "temp": "server/temp.ts",
-    },
-    watch: {
-      include: "server/server.ts",
-      exclude: [
-        "src/**/*"
-      ]
-    },
-    output: {
-      format: "cjs",
-      dir: "public/",
-    },
-    external: builtins,
-    plugins: [
-      commonjs(),
-      typescript({
-        tsconfig: false,
-        target: "es6",
-        allowSyntheticDefaultImports: true
-      }),
-      json(),
-      resolve({
-        browser: false,
-        rootDir: __dirname,
-      }),
-      terser(),
-    ]
-  }
-}
-
 function pagesConfig(){
   function getInput(){
     let obj = {
@@ -111,7 +77,9 @@ function pagesConfig(){
         preprocess: svelte_preprocess({}),
         emitCss: false,
       }),
-      commonjs(),
+      commonjs({
+        exclude: "server/**/*",
+      }),
       resolve({
         browser: true,
         dedupe: [ 'svelte' ]
@@ -119,7 +87,8 @@ function pagesConfig(){
       typescript({
         tsconfig: false,
         target: "es6",
-        allowSyntheticDefaultImports: true
+        allowSyntheticDefaultImports: true,
+        exclude: "server/**/*"
       }),
     ],
   };
@@ -158,7 +127,6 @@ export default function(args){
   } else if(args["both"]){
     delete args["both"];
     return [
-      serverConfig(),
       pagesConfig(),
     ];
   }
