@@ -31,7 +31,6 @@ app.use("/", logger);
 //*/
 
 app.get('/', (req, res) => {
-  console.log("root path");
   res.type("text/plain; charset=utf-8");
   res.end("HEY THERE!");
 });

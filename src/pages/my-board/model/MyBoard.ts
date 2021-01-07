@@ -84,8 +84,8 @@ class MyBoard
       arg?: Omit<Item, "id">,
       parent?: Item
   ){
-    console.log("creating item");
-    fetch("/my-clip/create", {
+    console.log("creating item:", arg);
+    await fetch("/my-clip/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -97,8 +97,10 @@ class MyBoard
     }).then(res => res.text()
     ).then(res => {
       console.log(res);
-    })
+    });
 
+    /*
+    */
 
     let item = this.store.createItem(arg);
 
@@ -128,6 +130,7 @@ class MyBoard
 
     this.active_item_id = item.id;
     this.dispatch("createitem", item.id);
+
   }
 
   modifyItem(item: Item){
@@ -143,7 +146,12 @@ class MyBoard
       headers: {
         "Content-Type": "application/json"
       },
-      body: "HELLO WORLD!"
+      body: JSON.stringify({
+        "type": "text",
+        "id": "1",
+        "owner": "1",
+        "data": "Hello World",
+      })
     }).then(res => res.text()
     ).then(res => {
       console.log(res);

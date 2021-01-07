@@ -51,6 +51,7 @@
     display: grid;
     grid-template-columns: 350px 1fr;
     height: 100%;
+    background: #99aab5;
   }
 
   .side-panel-container {

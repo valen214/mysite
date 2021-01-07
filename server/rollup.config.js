@@ -25,7 +25,10 @@ export default function(){
     external: builtins,
     plugins: [
       commonjs({
-        exclude: "../src/**/*"
+        exclude: "../src/**/*",
+        dynamicRequireTargets: [
+          "node_modules/oracledb/**/*"
+        ]
       }),
       typescript({
         tsconfig: false,

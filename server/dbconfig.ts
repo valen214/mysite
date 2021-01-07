@@ -1,7 +1,6 @@
 
-
-
-const oracledb = require("oracledb");
+import type OracleDB from "oracledb";
+const oracledb: typeof OracleDB = require("oracledb");
 
 async function getPassword(){
   let password = process.env.OCI_DB_PASSPHRASE;
@@ -10,56 +9,60 @@ async function getPassword(){
   return "";
 }
 
-let cached_connection_promise: Promise<any>;
 
-console.log("executing dbconfig.ts,",
-    "cached_connection_promise:",
-    cached_connection_promise);
+export async function getConnection(retries?: number): Promise<OracleDB.Connection>{
 
-export async function getConnection(){
-  if(cached_connection_promise){
-    return await cached_connection_promise;
+  try{
+    const dir = 'D:\\software\\instantclient_19_8';
+    oracledb.initOracleClient({
+      libDir: dir,
+      configDir: dir + "\\network\\admin",
+    });
+    console.log("oracle database client initialized");
+  } catch(e){
+    let msg: string;
+
+    switch(typeof e){
+    case "string": msg = e; break;
+    case "object": msg = e.toString(); break;
+    }
+    if(msg?.startsWith("Error: NJS-077")){
+      /*
+        Error: NJS-077: Oracle Client library
+        has already been initialized
+      */
+    } else{
+      console.log("failed to init oracle client:", e);
+    }
   }
 
-  cached_connection_promise = new Promise(async resolve => {
-    try{
-      const dir = 'D:\\software\\instantclient_19_8'
-      oracledb.initOracleClient({
-        libDir: dir,
-        configDir: dir + "\\network\\admin",
-      });
-      console.log("oracle database client initialized");
-    } catch(e){
-      if(typeof e === "string" &&
-      e.startsWith("Error: NJS-077")){
-        /*
-          Error: NJS-077: Oracle Client library
-          has already been initialized
-        */
-      } else{
-        console.log("failed to init oracle client:", e);
-      }
-    }
+  let password = await getPassword();
+  if(!password){
+    console.log("empty database password,",
+        "won't connect to database");
+    return null;
+  }
 
-    let password = await getPassword();
-    if(!password){
-      console.log("empty database password,",
-          "won't connect to database");
-      return null;
-    }
-
-    let conn = await oracledb.getConnection({
-      user: "ADMIN",
-      password,
-      connectString: "db202010040550_low"
-    });
-
-    resolve(conn);
-  }).catch((e: any) => {
-    console.log(e);
+  return await oracledb.getConnection({
+    user: "ADMIN",
+    password,
+    connectString: "db202010040550_low"
   });
-  return await cached_connection_promise;
 }
+
+
+export async function execute(cmd: string){
+  let conn = await getConnection();
+  if(!conn) return;
+
+  return conn.execute(
+    cmd,
+    {}, {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+    }
+  );
+}
+
 
 /*
 
